@@ -1,9 +1,11 @@
 package relay
 
 import (
+	"context"
 	"log"
 
 	client "github.com/fbsobreira/gotron-sdk/pkg/client"
+	"github.com/fbsobreira/gotron-sdk/pkg/proto/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -52,4 +54,21 @@ func (r *Relay) GetBalance(address string) (balance int64, err error) {
 		return 0, err
 	}
 	return acc.Balance, nil
+}
+
+func (r *Relay) CreateAccount() (privateKey string, publicKey string, publicAddress string, err error) {
+	defer func() {
+		if err != nil {
+			privateKey = ""
+			publicKey = ""
+			publicAddress = ""
+		}
+	}()
+
+	msg, err := r.client.Client.GenerateAddress(context.Background(), &api.EmptyMessage{}, &grpc.EmptyCallOption{})
+	if err != nil {
+		log.Panic("generate address failed")
+	}
+
+	return msg.PrivateKey, publicKey, msg.Address, nil
 }

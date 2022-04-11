@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	fmt.Println(api.GetBalance(1, "TNQ33j2jiST9AkJ1P5ZNvqa53mkVPmv7cN"))
-	fmt.Println(api.GetBalance(2, "TNQ33j2jiST9AkJ1P5ZNvqa53mkVPmv7cN"))
-	fmt.Println(api.GetBalance(2, "TNQ33j2jiST9AkJ1P5ZNvqa53mkVPmv7cN"))
-	fmt.Println(api.GetBalance(2, "TNQ33j2jiST9AkJ1P5ZNvqa53mkVPmv7cN"))
+	fmt.Println(api.GetBalance(1, "TJZeQH5YT7wUVvFiKB8ofoQCvX9RAhyLyQ"))
+	// pk, pub, addr := api.CreateAccount()
+	// fmt.Println(pk, pub, addr)
+	// fmt.Println(api.GetBalance(1, addr))
 }
