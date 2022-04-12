@@ -1,0 +1,6 @@
+root:
+  url: "grpc.shasta.trongrid.io:50051"
+  is-using-http: false
+  api-key: "f1e478d5-f502-4121-8c1e-0b8ac3f47d8b"
+  tokens:
+    usdt: ""
