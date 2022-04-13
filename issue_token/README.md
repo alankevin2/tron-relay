@@ -1,0 +1,2 @@
+# mainnet usdt see here https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+# use contract deployment tool on shasta page: https://shasta.tronscan.org/?_ga=2.175296929.243575980.1649748259-1166259823.1649748259#/contracts/contract-compiler

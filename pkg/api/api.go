@@ -30,6 +30,10 @@ func CreateNewAccount() (privateKey string, publicKey string, publicAddress stri
 	return pk, pb, addr
 }
 
+// func TransferValueUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error) {
+// 	return relay.Shared(config.ChainID(chainID)).TransferValueUsingPrivateKey(privateKey, data)
+// }
+
 func InitRelay(chainIds []config.ChainID) {
 	for i := range chainIds {
 		// first time call Shared inits the instance

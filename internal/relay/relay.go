@@ -2,8 +2,16 @@ package relay
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"encoding/hex"
+	"fmt"
 	"log"
+	"math/big"
 
+	crypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	address "github.com/fbsobreira/gotron-sdk/pkg/address"
 	client "github.com/fbsobreira/gotron-sdk/pkg/client"
 	"github.com/fbsobreira/gotron-sdk/pkg/proto/api"
 	"gitlab.inlive7.com/crypto/tron-relay/config"
@@ -65,12 +73,25 @@ func (r *Relay) CreateNewAccount() (privateKey string, publicKey string, publicA
 		}
 	}()
 
+	// god knows why wallet client api do not return Public key....
 	msg, err := r.client.Client.GenerateAddress(context.Background(), &api.EmptyMessage{}, &grpc.EmptyCallOption{})
 	if err != nil {
 		log.Panic("generate address failed")
 	}
 
-	return msg.PrivateKey, publicKey, msg.Address, nil
+	// TODO, discuss that should we check everytime or not?
+	pub := public(msg.PrivateKey)             // thank you, Stackoverflow
+	pubInByte, _ := hex.DecodeString(pub[2:]) // don't know why, should ask tron, reference is here:https://www.btcschools.net/tron/tron_address.php
+	hashInByte := crypto.Keccak256(pubInByte) // refernce: https://www.btcschools.net/tron/tron_address.php
+	hash := hex.EncodeToString(hashInByte)    // NEVER use string(byte[]), because it will be case-sensitive, which is not expected!!!!!
+	hash = "41" + hash[len(hash)-40:]         // last two byte in hex string means 40 length of digits
+	addr := address.HexToAddress(hash).String()
+
+	if addr != msg.Address {
+		err = fmt.Errorf("address from remote does not pass local check, remote:%s, local:%s", msg.Address, addr)
+		log.Panic("CreateNewAccount faileds")
+	}
+	return msg.PrivateKey, pub, msg.Address, nil
 }
 
 // ******** PRIVATE ******** //
@@ -96,4 +117,12 @@ func createInstance(c config.ChainInfo) (*Relay, error) {
 
 func (r *Relay) destory() {
 	r.client.Conn.Close()
+}
+
+func public(privateKey string) (publicKey string) {
+	var e ecdsa.PrivateKey
+	e.D, _ = new(big.Int).SetString(privateKey, 16)
+	e.PublicKey.Curve = secp256k1.S256()
+	e.PublicKey.X, e.PublicKey.Y = e.PublicKey.Curve.ScalarBaseMult(e.D.Bytes())
+	return fmt.Sprintf("%x", elliptic.Marshal(secp256k1.S256(), e.X, e.Y))
 }
