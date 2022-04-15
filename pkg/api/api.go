@@ -30,9 +30,17 @@ func CreateNewAccount() (privateKey string, publicKey string, publicAddress stri
 	return pk, pb, addr
 }
 
+func QueryTransaction(chainID uint16, txn string) (t *types.TransactionState, err error) {
+	return relay.Shared(config.ChainID(chainID)).QueryTransaction(txn)
+}
+
 // func TransferValueUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error) {
 // 	return relay.Shared(config.ChainID(chainID)).TransferValueUsingPrivateKey(privateKey, data)
 // }
+
+func TransferTokenUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error) {
+	return relay.Shared(config.ChainID(chainID)).TransferTokenUsingPrivateKey(privateKey, data)
+}
 
 func InitRelay(chainIds []config.ChainID) {
 	for i := range chainIds {

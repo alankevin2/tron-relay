@@ -9,12 +9,10 @@ type TransactionState struct {
 	Value     *big.Int
 	From      string
 	To        string
-	GasPrice  *big.Int
-	Gas       uint64
+	FeeLimit  uint64
 	Time      uint64 // in Second
 	Chain     uint16 // current chain id number not more than 2000
 	ChainName string
-	UserNonce uint64
 }
 
 type EstimateGasInfo struct {
@@ -23,9 +21,8 @@ type EstimateGasInfo struct {
 }
 
 type TransactionRaw struct {
-	Value             *big.Int
-	To                string
-	PreferredGasPrice *big.Int
-	PreferredTipCap   *big.Int
-	TokenSymbol       string
+	Value          *big.Int
+	To             string
+	PreferredLimit uint64
+	TokenSymbol    string
 }
