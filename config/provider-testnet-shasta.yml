@@ -3,4 +3,5 @@ root:
   is-using-http: false
   api-key: "f1e478d5-f502-4121-8c1e-0b8ac3f47d8b"
   tokens:
+    # usdt: "TB5NSkyzxkzi3eHW87NwFE6TmtTmnZw61y" # official usdt? but cannot mint
     usdt: "TCji7PSofXeeVQb4aZXMDToq1TkkVZhYZD" # this is a token that we issued by ourselves (USaDT)

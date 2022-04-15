@@ -72,6 +72,24 @@ func (r *Relay) GetBalance(address string) (balance int64, err error) {
 	return acc.Balance, nil
 }
 
+func (r *Relay) GetBalanceForToken(address string, symbol string) (balance *big.Int, decimal uint8, err error) {
+	token := strings.ToLower(symbol)
+	tokenAddress := r.supportTokens[token]
+	if tokenAddress == "" {
+		return nil, 0, errors.New("token not match any of supported tokens")
+	}
+	balance, err = r.client.TRC20ContractBalance(address, tokenAddress)
+	if err != nil {
+		return nil, 0, err
+	}
+	d, err := r.client.TRC20GetDecimals(tokenAddress)
+	if err != nil {
+		return nil, 0, err
+	}
+	decimal = uint8(d.Int64())
+	return balance, decimal, nil
+}
+
 func (r *Relay) CreateNewAccount() (privateKey string, publicKey string, publicAddress string, err error) {
 	defer func() {
 		if err != nil {
@@ -197,6 +215,11 @@ func (r *Relay) QueryTransaction(txn string) (*types.TransactionState, error) {
 		Chain:     uint16(r.currentChainInfo.ID),
 		ChainName: r.currentChainInfo.Name,
 	}, nil
+}
+
+func (r *Relay) GetFeeLimit() (limit uint64, err error) {
+	// reference to github.com/fbsobreira/gotron-sdk in package cmd file contracts.go
+	return 1000000000, nil
 }
 
 // ******** PRIVATE ******** //

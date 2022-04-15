@@ -21,4 +21,9 @@ func main() {
 
 	t, err := api.QueryTransaction(2, "44a2a52c90f4fab6bb8db87200d45c9fc1dcbb6cc2a0fb06b16e2004ba2315e9")
 	fmt.Println(t, err)
+
+	balance, decimal, err := api.GetBalanceForToken(2, "TK7q7c6RRSjTvuzmVmZNgq18nQrmx1UZtc", "USDT")
+	fmt.Println(balance, decimal, err)
+
+	fmt.Println(api.GetFeeLimit(2))
 }

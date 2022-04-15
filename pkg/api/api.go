@@ -9,18 +9,22 @@ import (
 )
 
 type TronRelay interface {
-	GetBalance(uint8, string) uint64
+	// GetBalance(uint8, string) uint64
 	GetBalanceForToken(chainID uint16, address string, symbol string) (balance *big.Int, decimal uint8, err error)
 	CreateNewAccount() (privateKey string, publicKey string, publicAddress string)
 	QueryTransaction(chainID uint16, txn string) (*types.TransactionState, bool, error)
-	TransferValueUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error)
+	// TransferValueUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error)
 	TransferTokenUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error)
-	GetGasPrice(chainID uint16) (*types.EstimateGasInfo, error)
+	GetFeeLimit(chainID uint16) (uint64, error)
 	InitRelay(chainIds []config.ChainID)
 }
 
-func GetBalance(chainID uint16, address string) (balance int64, err error) {
-	return relay.Shared(config.ChainID(chainID)).GetBalance(address)
+// func GetBalance(chainID uint16, address string) (balance int64, err error) {
+// 	return relay.Shared(config.ChainID(chainID)).GetBalance(address)
+// }
+
+func GetBalanceForToken(chainID uint16, address string, symbol string) (balance *big.Int, decimal uint8, err error) {
+	return relay.Shared(config.ChainID(chainID)).GetBalanceForToken(address, symbol)
 }
 
 func CreateNewAccount() (privateKey string, publicKey string, publicAddress string) {
@@ -40,6 +44,10 @@ func QueryTransaction(chainID uint16, txn string) (t *types.TransactionState, er
 
 func TransferTokenUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error) {
 	return relay.Shared(config.ChainID(chainID)).TransferTokenUsingPrivateKey(privateKey, data)
+}
+
+func GetFeeLimit(chainID uint16) (uint64, error) {
+	return relay.Shared(config.ChainID(chainID)).GetFeeLimit()
 }
 
 func InitRelay(chainIds []config.ChainID) {

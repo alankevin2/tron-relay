@@ -15,11 +15,6 @@ type TransactionState struct {
 	ChainName string
 }
 
-type EstimateGasInfo struct {
-	GasPrice *big.Int
-	TipCap   *big.Int
-}
-
 type TransactionRaw struct {
 	Value          *big.Int
 	To             string
