@@ -16,6 +16,7 @@ type TronRelay interface {
 	// TransferValueUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error)
 	TransferTokenUsingPrivateKey(chainID uint16, privateKey string, data *types.TransactionRaw) (hash string, err error)
 	GetFeeLimit(chainID uint16) (uint64, error)
+	GetTokenAddress(symbol string) (address string)
 	InitRelay(chainIds []config.ChainID)
 }
 
@@ -48,6 +49,10 @@ func TransferTokenUsingPrivateKey(chainID uint16, privateKey string, data *types
 
 func GetFeeLimit(chainID uint16) (uint64, error) {
 	return relay.Shared(config.ChainID(chainID)).GetFeeLimit()
+}
+
+func GetTokenAddress(chainID uint16, symbol string) (address string) {
+	return relay.Shared(config.ChainID(chainID)).GetTokenAddress(symbol)
 }
 
 func InitRelay(chainIds []config.ChainID) {

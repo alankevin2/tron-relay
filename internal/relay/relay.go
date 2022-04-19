@@ -222,6 +222,10 @@ func (r *Relay) GetFeeLimit() (limit uint64, err error) {
 	return 1000000000, nil
 }
 
+func (r *Relay) GetTokenAddress(symbol string) string {
+	return r.supportTokens[symbol]
+}
+
 // ******** PRIVATE ******** //
 
 func createInstance(c config.ChainInfo) (*Relay, error) {
