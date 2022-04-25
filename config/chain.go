@@ -7,8 +7,8 @@ import (
 type ChainID uint16
 
 const (
-	Mainnet ChainID = 1
-	Shasta  ChainID = 2
+	Mainnet ChainID = 65535
+	Shasta  ChainID = 65534
 )
 
 type ChainInfo struct {
