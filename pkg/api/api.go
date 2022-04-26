@@ -35,7 +35,7 @@ func CreateNewAccount() (privateKey string, publicKey string, publicAddress stri
 	return pk, pb, addr
 }
 
-func QueryTransaction(chainID uint16, txn string) (t *types.TransactionState, err error) {
+func QueryTransaction(chainID uint16, txn string) (t *types.TransactionState, isPending bool, err error) {
 	return relay.Shared(config.ChainID(chainID)).QueryTransaction(txn)
 }
 

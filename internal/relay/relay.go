@@ -5,15 +5,19 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/big"
+	"net/http"
 	"strings"
 
 	crypto "github.com/ethereum/go-ethereum/crypto"
 	address "github.com/fbsobreira/gotron-sdk/pkg/address"
 	client "github.com/fbsobreira/gotron-sdk/pkg/client"
+
 	"github.com/golang/protobuf/ptypes"
 
 	"github.com/fbsobreira/gotron-sdk/pkg/proto/api"
@@ -163,12 +167,12 @@ func (r *Relay) TransferTokenUsingPrivateKey(privateKey string, data *types.Tran
 	return hex.EncodeToString(t.Txid), nil
 }
 
-func (r *Relay) QueryTransaction(txn string) (*types.TransactionState, error) {
+func (r *Relay) QueryTransaction(txn string) (*types.TransactionState, bool, error) {
 	tInfo, err := r.client.GetTransactionInfoByID(txn)
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
-	from, to, value := "", "", big.NewInt(0)
+	from, to, value, isPending := "", "", big.NewInt(0), true
 	if tInfo.ContractAddress != nil && len(tInfo.ContractAddress) > 0 {
 		var isSupportToken bool
 		contractAddressInHex := hex.EncodeToString(tInfo.ContractAddress)
@@ -186,25 +190,30 @@ func (r *Relay) QueryTransaction(txn string) (*types.TransactionState, error) {
 	} else {
 		t, err := r.client.GetTransactionByID(txn)
 		if err != nil {
-			return nil, err
+			return nil, isPending, err
 		}
 		if len(t.RawData.Contract) < 1 || t.RawData.Contract[0] == nil {
-			return nil, errors.New("transaction rawdata contract is nil")
+			return nil, isPending, errors.New("transaction rawdata contract is nil")
 		}
 		if t.RawData.Contract[0].Type != core.Transaction_Contract_TransferContract {
-			return nil, errors.New("transaction action is out of our scope")
+			return nil, isPending, errors.New("transaction action is out of our scope")
 		}
 		contract := t.RawData.Contract[0]
 		var c core.TransferContract
 
 		if err = ptypes.UnmarshalAny(contract.GetParameter(), &c); err != nil {
-			return nil, err
+			return nil, isPending, err
 		}
 		from = address.Address(c.OwnerAddress).String()
 		to = address.Address(c.ToAddress).String()
 		value = big.NewInt(c.Amount)
 	}
 
+	blockExist, err := r.getBlockByNumByCallingSolidityNode(tInfo.BlockNumber)
+	if err != nil {
+		return nil, isPending, err
+	}
+	isPending = !blockExist
 	return &types.TransactionState{
 		Success:   tInfo.Result.Number() == 0,
 		From:      from,
@@ -214,7 +223,7 @@ func (r *Relay) QueryTransaction(txn string) (*types.TransactionState, error) {
 		Time:      uint64(tInfo.BlockTimeStamp),
 		Chain:     uint16(r.currentChainInfo.ID),
 		ChainName: r.currentChainInfo.Name,
-	}, nil
+	}, isPending, nil
 }
 
 func (r *Relay) GetFeeLimit() (limit uint64, err error) {
@@ -257,4 +266,37 @@ func publicStrToAddress(publicKey string) string {
 	hash := hex.EncodeToString(hashInByte)          // NEVER use string(byte[]), because it will be case-sensitive, which is not expected!!!!!
 	hash = "41" + hash[len(hash)-40:]               // last two byte in hex string means 40 length of digits
 	return address.HexToAddress(hash).String()
+}
+
+// Tronsdk has not implement this related method on grpc
+func (r *Relay) getBlockByNumByCallingSolidityNode(blockNum int64) (blockExist bool, err error) {
+	var url string
+	switch r.currentChainInfo.ID {
+	case config.Shasta:
+		url = "https://api.shasta.trongrid.io/walletsolidity/getblockbynum"
+	case config.Mainnet:
+		fallthrough
+	default:
+		url = "https://api.trongrid.io/walletsolidity/getblockbynum"
+	}
+	queryJson := fmt.Sprintf("{\"num\":%d}", blockNum)
+	payload := strings.NewReader(queryJson)
+	req, err := http.NewRequest("POST", url, payload)
+	if err != nil {
+		return false, err
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	result := struct {
+		BlockID     string                 `json:"blockID"`
+		BlockHeader map[string]interface{} `json:"block_header"`
+	}{}
+	json.Unmarshal(body, &result)
+	return len(result.BlockID) > 0, nil
 }

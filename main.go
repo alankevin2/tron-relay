@@ -18,12 +18,11 @@ func main() {
 	// 	TokenSymbol:    "USDT",
 	// })
 	// fmt.Println(txid, err)
+	t, isPending, err := api.QueryTransaction(65534, "e722bbf8949f009ce60e61ca0d391c728a2b6695671733af27020f0ada0d8687")
+	fmt.Println(t, isPending, err)
 
-	t, err := api.QueryTransaction(2, "44a2a52c90f4fab6bb8db87200d45c9fc1dcbb6cc2a0fb06b16e2004ba2315e9")
-	fmt.Println(t, err)
-
-	balance, decimal, err := api.GetBalanceForToken(2, "TK7q7c6RRSjTvuzmVmZNgq18nQrmx1UZtc", "USDT")
+	balance, decimal, err := api.GetBalanceForToken(65534, "TK7q7c6RRSjTvuzmVmZNgq18nQrmx1UZtc", "USDT")
 	fmt.Println(balance, decimal, err)
 
-	fmt.Println(api.GetFeeLimit(2))
+	fmt.Println(api.GetFeeLimit(65534))
 }
