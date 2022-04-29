@@ -29,9 +29,9 @@ func GetBalanceForToken(chainID uint16, address string, symbol string) (balance 
 }
 
 func CreateNewAccount() (privateKey string, publicKey string, publicAddress string) {
-	// walletClient api required online, we use chainID 1 for the mainnet
+	// walletClient api required online, we use the mainnet
 	// account should be activated seperately on mainnet and testnet
-	pk, pb, addr, _ := relay.Shared(1).CreateNewAccount()
+	pk, pb, addr, _ := relay.Shared(config.ChainID(config.Mainnet)).CreateNewAccount()
 	return pk, pb, addr
 }
 
